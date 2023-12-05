@@ -1,4 +1,3 @@
-import io
 import os
 import re
 import shlex
@@ -6,32 +5,59 @@ import subprocess
 
 from django.http import FileResponse, Http404
 from django.shortcuts import render
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
 from catalog import models
 from django.shortcuts import redirect
+from django.utils import timezone
 
-'''
-query = "select * from auth_user where username='qwerty' AND password='qetadg123';"
->>> results = User.objects.raw(query)                                                   
->>> for result in results:
-...     result
 
-'''
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 
 def custom_login(request):
     if request.method == 'GET':
+        ip = get_client_ip(request)
         return render(request, '../templates/registration/login.html', context={'error_msg': ''})
     if request.method == 'POST':
+        ip = get_client_ip(request)
+        obj, created = models.TemporaryBanIp.objects.get_or_create(
+            defaults = {
+                'ip_address': ip,
+                'time_unblock': timezone.now()
+            },
+            ip_address=ip
+        )
+
+        if obj.status is True and obj.time_unblock > timezone.now():
+            if obj.attempts == 3:
+                return render(request, '../templates/registration/login.html',
+                              context={'error_msg': 'Too many attempts. Relax.'})
+
+        elif obj.status is True and obj.time_unblock < timezone.now():
+            obj.status = False
+            obj.save()
+
         username = request.POST.get('username')
         password = request.POST.get('password')
         username = re.sub(r'[^\w]', '', username)
         password = re.sub(r'[^\w]', '', password)
-        query = "select * from catalog_myuser where username=? AND password=?;"
+        query = "select * from catalog_myuser where username=%s AND password=%s;"
         result = models.MyUser.objects.raw(query, [username, password])
         if len(result):
+            obj.attempts = 0
+            obj.save()
             return redirect('../../profile/' + str(result[0].slug))
         else:
+            obj.attempts += 1
+            if obj.attempts == 3:
+                obj.time_unblock = timezone.now() + timezone.timedelta(minutes=5)
+                obj.status = True
+            obj.save()
             return render(request, '../templates/registration/login.html', context={'error_msg': 'Your username and password didn\'t match. Please try again.'})
 
 def using_cmd(request):
@@ -58,7 +84,3 @@ def cool_photo(request):
             return FileResponse(open(path, 'rb'), content_type='text/plain')
     else:
         raise Http404
-
-def logout(request):
-
-    return render(request, '../templates/registration/logged_out.html')

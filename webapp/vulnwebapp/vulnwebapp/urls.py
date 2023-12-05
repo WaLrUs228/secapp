@@ -24,9 +24,7 @@ from . import views
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('catalog/', include('catalog.urls')),
     path('profile/<slug:slug>/', include('catalog.urls')),
-    #path('accounts/', include('django.contrib.auth.urls')),
     path('accounts/login/', views.custom_login, name='login'),
     path('nslookup/', views.using_cmd, name='dns'),
     path('photo/', views.cool_photo, name='photo'),
