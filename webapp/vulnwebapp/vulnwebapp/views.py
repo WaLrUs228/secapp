@@ -30,7 +30,7 @@ def custom_login(request):
         query = "select * from catalog_myuser where username=? AND password=?;"
         result = models.MyUser.objects.raw(query, [username, password])
         if len(result):
-            return redirect('../../profile/' + str(result[0].pk))
+            return redirect('../../profile/' + str(result[0].slug))
         else:
             return render(request, '../templates/registration/login.html', context={'error_msg': 'Your username and password didn\'t match. Please try again.'})
 
@@ -58,3 +58,7 @@ def cool_photo(request):
             return FileResponse(open(path, 'rb'), content_type='text/plain')
     else:
         raise Http404
+
+def logout(request):
+
+    return render(request, '../templates/registration/logged_out.html')

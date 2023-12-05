@@ -9,6 +9,8 @@ from django.contrib.auth.models import AbstractBaseUser
 class MyUser(AbstractBaseUser):
     username = models.CharField(max_length=30, verbose_name="username")
     password = models.CharField(max_length=128, verbose_name="password")
+    #unique_id = models.UUIDField(default=uuid.uuid4(), editable=False, auto_created=True)
+    slug = models.SlugField()
     USERNAME_FIELD = 'username'
 
     def __str__(self):
