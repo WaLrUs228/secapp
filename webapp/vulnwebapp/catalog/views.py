@@ -1,3 +1,4 @@
+import django.utils.html
 from django.shortcuts import render
 from django.views import generic
 
@@ -15,7 +16,8 @@ def index(request, pk):
     entry = MyUser.objects.get(pk=pk)
     username = entry.username
     chat = Chat.objects.all()
-
+    for msg in chat:
+        msg.text = django.utils.html.mark_safe(django.utils.html.escape(msg.text))
     return render(
         request,
         'index.html',
