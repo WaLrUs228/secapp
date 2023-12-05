@@ -4,7 +4,7 @@ import re
 import shlex
 import subprocess
 
-from django.http import FileResponse
+from django.http import FileResponse, Http404
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
@@ -52,6 +52,9 @@ def using_cmd(request):
 
 def cool_photo(request):
     filename = request.GET.get('filename')
-    path = os.path.join('catalog/static/image/', filename)
-    if os.path.isfile(path):
-        return FileResponse(open(path, 'rb'), content_type='text/plain')
+    if "../" not in filename:
+        path = os.path.join('catalog/static/image/', filename)
+        if os.path.isfile(path):
+            return FileResponse(open(path, 'rb'), content_type='text/plain')
+    else:
+        raise Http404
