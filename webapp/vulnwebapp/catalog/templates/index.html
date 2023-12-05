@@ -1,0 +1,21 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+<h1>VulnApp profile</h1>
+
+  <p>Good afternoon <em>{{username}}</em>.</p>
+{% autoescape off %}
+{% for msg in chat %}
+<p>
+    {{msg.author}}: {{msg.text}}
+</p>
+<p></p>
+{% endfor %}
+{% endautoescape %}
+<form method="post" action="">
+{% csrf_token %}
+    <label for="msg">Enter your message:</label>
+    <input type="text" name="msg" value="" id="msg"><br>
+</form>
+
+{% endblock %}

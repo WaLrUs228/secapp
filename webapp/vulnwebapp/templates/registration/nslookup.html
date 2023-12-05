@@ -1,0 +1,13 @@
+{% extends "base_generic.html" %}
+
+{% block content %}
+
+<form method="post" action="">
+{% csrf_token %}
+    <label for="domain">Enter domain:</label>
+    <input type="text" name="domain" value="" id="domain"><br>
+</form>
+
+<p1>{{ result }}</p1>
+
+{% endblock %}
