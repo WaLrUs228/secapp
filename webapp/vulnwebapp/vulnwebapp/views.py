@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import subprocess
 
 from django.http import FileResponse
@@ -23,7 +24,10 @@ def custom_login(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
-        result = models.MyUser.objects.raw("select * from catalog_myuser where username='" + username + "' AND password='" + password + "';")
+        username = re.sub(r'[^\w\s]', '', username)
+        password = re.sub(r'[^\w\s]', '', password)
+        query = "select * from catalog_myuser where username=? AND password=?;"
+        result = models.MyUser.objects.raw(query, [username, password])
         if len(result):
             return redirect('../../profile/' + str(result[0].pk))
         else:
